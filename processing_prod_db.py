@@ -6,6 +6,48 @@ from cryptography.fernet import Fernet
 
 conn = Connection()
 
+def aml_update_krw_value():
+    query_text = '''
+update crypto_transfer as aa
+set
+    amount = "volume" * bb.amount
+from (
+         select id,
+                case a.symbol
+                    when 'USDT' then 1
+                    else
+                        coalesce(
+                                (select
+                                     close_price
+                                 from (
+                                          select
+                                              abs(EXTRACT(EPOCH FROM (a.created - created))) as diff,
+                                              close_price
+                                          from candles
+                                          where
+                                                  split_part(trading_pair_name, '-', 1) = a.symbol
+                                            and created between a.created - (interval '365 day') and a.created + (interval '365 day')
+                                      ) as b
+                                 order by diff
+                                 limit 1)
+                            , 0)
+                    end amount
+         from crypto_transfer a
+         where
+             crypto_transfer_status in ('CANCELLED', 'COMPLETED', 'INSUFFICIENT', 'FAIL')
+           and created > to_timestamp('2022-02-10 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
+           and symbol <> 'KOC'
+           and amount = 0
+     ) as bb
+where
+        aa.id = bb.id
+;'''
+
+    cur = conn.db.cursor()
+    cur.execute(query_text)
+    data = cur.fetchall()
+
+    print(data)
 
 def aml_t_kyc_base():
     query_text = '''
@@ -117,7 +159,6 @@ where p.unique_key is not null
         output = csv.writer(f)
         for row in data:
             output.writerow(row)
-
 
 def aml_t_kyc_base_decrypted_data():
     query_text = """
@@ -536,6 +577,7 @@ def manual_decrypt_phonenumber(target_list):
 
 
 if __name__ == '__main__':
+    aml_update_krw_value()
     aml_t_kyc_base()
     aml_t_kyc_base_decrypted_data()
     aml_t_tms_dl_buy_crypto()
