@@ -44,10 +44,9 @@ where
 ;'''
 
     cur = conn.db.cursor()
-    cur.execute(query_text)
-    data = cur.fetchall()
+    result = cur.execute(query_text)
 
-    print(data)
+    print(result)
 
 def aml_t_kyc_base():
     query_text = '''
