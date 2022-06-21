@@ -31,11 +31,11 @@ if __name__ == '__main__':
             run_cmd(' '.join(cmd))
 
         cmd = ['. ~/.profile; /home/ubuntu/AMLExpress_6_0_Batch/dist/KYC_WLF.sh', 'DAY', current_date_fmt, current_date_fmt, '0']
-        print('==============KYC_WLF==============')
+        print('==============KYC_WLF DAY==============')
         run_cmd(' '.join(cmd))
 
         cmd = ['. ~/.profile; /home/ubuntu/AMLExpress_6_0_Batch/dist/KYC_RA.sh', 'RAI', current_date_fmt, '0']
-        print('==============KYC_RA==============')
+        print('==============KYC_RA RAI==============')
         run_cmd(' '.join(cmd))
 
         cmd = ['. ~/.profile; /home/ubuntu/AMLExpress_6_0_Batch/dist/TMS_STR.sh', current_date_eve_fmt, current_date_fmt, '0']
@@ -44,12 +44,12 @@ if __name__ == '__main__':
 
         if current_date.month != prev_month and prev_month != 0:
             # 월 1회 실행
-            cmd = ['. ~/.profile; /home/ubuntu/AMLExpress_6_0_Batch/dist/KYC_RA.sh', 'RAB', current_date_eve_fmt, '0']
-            print('==============KYC_RA==============')
+            cmd = ['. ~/.profile; /home/ubuntu/AMLExpress_6_0_Batch/dist/KYC_RA.sh', 'RAB', current_date_fmt, '0']
+            print('==============KYC_RA RAB==============')
             run_cmd(' '.join(cmd))
 
-            cmd = ['. ~/.profile; /home/ubuntu/AMLExpress_6_0_Batch/dist/KYC_WLF.sh', 'MTH', current_date_eve_fmt, current_date_eve_fmt, '0']
-            print('==============KYC_WLF==============')
+            cmd = ['. ~/.profile; /home/ubuntu/AMLExpress_6_0_Batch/dist/KYC_WLF.sh', 'MTH', current_date_fmt, current_date_fmt, '0']
+            print('==============KYC_WLF MTH==============')
             run_cmd(' '.join(cmd))
 
         if (end_date - current_date).days == 0:
