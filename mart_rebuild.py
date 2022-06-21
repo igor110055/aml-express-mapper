@@ -1,6 +1,6 @@
 from datetime import datetime
 from datetime import timedelta
-import subprocess
+import os
 import sys
 
 if __name__ == '__main__':
@@ -22,29 +22,29 @@ if __name__ == '__main__':
         current_date_eve_fmt = current_date_eve.strftime(date_format)
 
         if index == 0:
-            cmd = ['. ~/.profile; /home/ubuntu/AMLExpress_6_0_Batch/dist/ETL_REV.sh', current_date_fmt, current_date_fmt]
-            subprocess.run(cmd, stdout=subprocess.DEVNULL)
+            cmd = ['. ~/.profile; /home/ubuntu/AMLExpress_6_0_Batch/dist/ETL_REV.sh', end_date, end_date]
+            os.system(cmd.join(' '))
 
         cmd = ['. ~/.profile; /home/ubuntu/AMLExpress_6_0_Batch/dist/KYC_WLF.sh', 'DAY', current_date_fmt, current_date_fmt, '0']
-        subprocess.run(cmd, stdout=subprocess.DEVNULL)
+        os.system(cmd.join(' '))
 
         cmd = ['. ~/.profile; /home/ubuntu/AMLExpress_6_0_Batch/dist/KYC_RA.sh', 'RAI', current_date_fmt, '0']
-        subprocess.run(cmd, stdout=subprocess.DEVNULL)
+        os.system(cmd.join(' '))
 
         cmd = ['. ~/.profile; /home/ubuntu/AMLExpress_6_0_Batch/dist/TMS_STR.sh', current_date_eve_fmt, current_date_eve_fmt, '0']
-        subprocess.run(cmd, stdout=subprocess.DEVNULL)
+        os.system(cmd.join(' '))
 
         if current_date.month != prev_month and prev_month != 0:
             # 월 1회 실행
             cmd = ['. ~/.profile; /home/ubuntu/AMLExpress_6_0_Batch/dist/KYC_RA.sh', 'RAB', current_date_eve_fmt, '0']
-            subprocess.run(cmd, stdout=subprocess.DEVNULL)
+            os.system(cmd.join(' '))
 
             cmd = ['. ~/.profile; /home/ubuntu/AMLExpress_6_0_Batch/dist/KYC_WLF.sh', 'MTH', current_date_eve_fmt, current_date_eve_fmt, '0']
-            subprocess.run(cmd, stdout=subprocess.DEVNULL)
+            os.system(cmd.join(' '))
 
         if (end_date - current_date).days == 0:
             cmd = ['. ~/.profile; /home/ubuntu/AMLExpress_6_0_Batch/dist/ETL_SND.sh', current_date_fmt, current_date.strftime('%Y')]
-            subprocess.run(cmd, stdout=subprocess.DEVNULL)
+            os.system(cmd.join(' '))
 
             break
 
