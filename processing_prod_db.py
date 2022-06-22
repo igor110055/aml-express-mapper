@@ -46,6 +46,8 @@ where
     cur = conn.db.cursor()
     result = cur.execute(query_text)
 
+    conn.commit()
+
     print(result)
 
 def aml_t_kyc_base():
