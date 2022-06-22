@@ -34,7 +34,7 @@ from (
                     end amount
          from crypto_transfer a
          where
-             crypto_transfer_status in ('CANCELLED', 'COMPLETED', 'INSUFFICIENT', 'FAIL')
+             crypto_transfer_status in ('COMPLETED')
            and created > to_timestamp('2022-02-10 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
            and symbol <> 'KOC'
            and amount = 0
@@ -50,7 +50,7 @@ where
 
 def aml_t_kyc_base():
     query_text = '''
-select coalesce(to_char(laua.modified, 'YYYYMMDD'), '20220210'),
+select coalesce(to_char(id_photo_kyc_last_censored_at, 'YYYYMMDD'), '20220210'),
        p.unique_key,
        (case when u.user_type like '%INDIVIDUAL' then '1' else '2' end)::varchar,
        '01'::varchar,
@@ -105,7 +105,7 @@ select coalesce(to_char(laua.modified, 'YYYYMMDD'), '20220210'),
        null,
        null,
        '0'::varchar,
-       coalesce(to_char(laua.created, 'YYYYMMDD'), '20220210'),
+       coalesce(to_char(id_photo_kyc_last_censored_at, 'YYYYMMDD'), '20220210'),
        to_char(u.modified, 'YYYYMMDD'),
        '99991231'::varchar,
        '이메일복호화'::varchar,
@@ -134,21 +134,14 @@ select coalesce(to_char(laua.modified, 'YYYYMMDD'), '20220210'),
        '2'::varchar,
        '99991231'::varchar
 from "user" u
-         left join (select *, row_number() over (partition by unique_key) as r
-                    from "profile") p on u.id = p.user_id and p.r = 1
-         left join "verification" v on v.user_id = u.id
-         left join (SELECT created, modified,
-                           action,
-                           user_id,
-                           ROW_NUMBER() OVER (PARTITION BY user_id
-                               ORDER BY created ASC) as rn
-                    FROM logs_aml_user_action
-                    WHERE action = 'validate_idcard') laua on u.id = laua.user_id and rn = 1
-where p.unique_key is not null
-  and length(p.unique_key) > 0
-  and p.unique_key != 'NULL'
-  and laua.modified is not null
-  and u.level > 3;'''
+    left join (select *, row_number() over (partition by unique_key) as r from "profile") p on u.id = p.user_id and p.r = 1
+    left join "verification" v on v.user_id = u.id
+where
+    id_photo_verification_status = 'VERIFIED'
+    and p.unique_key is not null
+    and length(p.unique_key) > 0
+    and p.unique_key != 'NULL'
+    and u.level > 2;'''
 
     cur = conn.db.cursor()
     cur.execute(query_text)
@@ -223,7 +216,7 @@ def aml_t_kyc_base_update_exit():
 
 def aml_t_ac_prod():
     query_text = '''
-select to_char(laua.created, 'YYYYMMDD'),
+select coalesce(to_char(id_photo_kyc_last_censored_at, 'YYYYMMDD'), '20220210'),
        u.id,
        '99',                               -- 상품번호 기타
        '1',                                -- 계좌상태 정상 2: 비정상
@@ -233,32 +226,27 @@ select to_char(laua.created, 'YYYYMMDD'),
        null,
        null,
        null,
-       to_char(laua.created, 'YYYYMMDD'), -- 계좌개설일자
+       coalesce(to_char(id_photo_kyc_last_censored_at, 'YYYYMMDD'), '20220210'), -- 계좌개설일자
        null,
        '9',                                -- 사고여부 9: 알 수 없음
        null,
        null,
        '2',                                -- 휴면여부 1: 여 2: 부 9: 알 수 없음
        '',                                 -- 휴면일 YYYYMMDD
-       to_char(laua.created, 'YYYYMMDD'),   -- 데이터 내부 입력일시(YYYYMMDDHH24MISS)
+       coalesce(to_char(id_photo_kyc_last_censored_at, 'YYYYMMDD'), '20220210'),   -- 데이터 내부 입력일시(YYYYMMDDHH24MISS)
        to_char(u.modified, 'YYYYMMDD'),     -- 데이터 내부 수정일시
        '99991231'::varchar      -- 99991231'
 from "user" u
          left join (select *, row_number() over (partition by unique_key) as r
                     from "profile") p on u.id = p.user_id and p.r = 1
          left join "verification" v on v.user_id = u.id
-         left join (SELECT created,
-                           action,
-                           user_id,
-                           ROW_NUMBER() OVER (PARTITION BY user_id
-                               ORDER BY created DESC) as rn
-                    FROM logs_aml_user_action
-                    WHERE action = 'validate_idcard') laua on u.id = laua.user_id and rn = 1
-where p.unique_key is not null
-  and length(p.unique_key) > 0
-  and p.unique_key != 'NULL'
-  and laua.created is not null
-  and u.level > 3;'''
+where
+    id_photo_verification_status = 'VERIFIED'
+    and p.unique_key is not null
+    and length(p.unique_key) > 0
+    and p.unique_key != 'NULL'
+    and u.level > 2
+;'''
 
     cur = conn.db.cursor()
     cur.execute(query_text)
@@ -272,35 +260,28 @@ where p.unique_key is not null
 
 def aml_t_kyc_token_address():
     query_text = '''
-select to_char(coalesce(laua.created, now()), 'YYYYMMDD'),
+select coalesce(to_char(id_photo_kyc_last_censored_at, 'YYYYMMDD'), '20220210'),
        u.id,
        w.network_name,
        w.symbol,
        wa.address,
        null, -- 목표꼬리표
        p.unique_key,
-       coalesce(laua.created, now()),
-       coalesce(laua.modified, now()),
+       coalesce(to_char(id_photo_kyc_last_censored_at, 'YYYYMMDD'), '20220210'),
+       coalesce(u.modified, '20220210'),
        '2',
        '99991231'::varchar
 from wallet_address wa
          left join wallet w on wa.wallet_id = w.id
          left join "user" u on wa.user_id = u.id
-         left join (select *, row_number() over (partition by unique_key) as r
-                    from "profile") p on u.id = p.user_id and p.r = 1
+         left join (select *, row_number() over (partition by unique_key) as r from "profile") p on u.id = p.user_id and p.r = 1
          left join "verification" v on v.user_id = u.id
-         left join (SELECT created, modified,
-                           action,
-                           user_id,
-                           ROW_NUMBER() OVER (PARTITION BY user_id
-                               ORDER BY created DESC) as rn
-                    FROM logs_aml_user_action
-                    WHERE action = 'validate_idcard') laua on u.id = laua.user_id and rn = 1
-where p.unique_key is not null
-  and length(p.unique_key) > 0
-  and p.unique_key != 'NULL'
-  and u.level > 3
-  and laua.modified is not null;'''
+where
+    id_photo_verification_status = 'VERIFIED'
+    and p.unique_key is not null
+    and length(p.unique_key) > 0
+    and p.unique_key != 'NULL'
+    and u.level > 2;'''
 
     cur = conn.db.cursor()
     cur.execute(query_text)
@@ -335,39 +316,32 @@ select to_char(t.created, 'YYYYMMDD'),                                          
        'oasisexc',                                                                                                             -- 이체금융기관명	CPRTY_TRSNS_FOGN_NM         코인출고 상대편 : 오아시스
        null,                                                                                                                   -- 이체금융기관지점코드	CPRTY_TRSNS_DPRT_CD     코인출고 상대편 : null
        (select waa.address::text
-       from (select address from wallet_address where symbol=t.base_symbol and t.seller_id=user_id) as waa) as rcvr_addr,                  -- 이체은행금융기관계좌번호	CPRTY_TRSNS_AC_NO
+       from (select address from wallet_address where symbol=t.base_symbol and t.seller_id=user_id limit 1) as waa) as rcvr_addr,                  -- 이체은행금융기관계좌번호	CPRTY_TRSNS_AC_NO
        p.unique_key,                                                                                                           -- 상대대체계좌명	CPRTY_TRSNS_AC_NM           코인출고 상대편 : 상대방 계정명
        null,                                                                                                                   -- 업체코드	BUSI_CD
        '2',                                                                                                                    -- 거래취소여부	CNCL_F
        null,                                                                                                                   -- 거래취소일시	CNCL_DY_TM
        (select waa.address::text
-       from (select address from wallet_address where symbol=t.base_symbol and t.buyer_id=user_id) as waa) as sndr_addr,                  -- 지갑주소	WLT_ADR
+       from (select address from wallet_address where symbol=t.base_symbol and t.buyer_id=user_id limit 1) as waa) as sndr_addr,                  -- 지갑주소	WLT_ADR
        null,                                                                                                                   -- 목표꼬리표	DESTINATION_TAG                 목표꼬리표(리플,이오스)
        null,                                                                                                                   -- 체인아널리시스스코어	CHNANL_SOR              FDS
        '2',                                                                                                                    -- 투자유의종목매매여부	INVST_WRN_ITEM_TRD_F    1:여/2:부
        to_char(t.modified, 'YYYYMMDD')                                                                                         -- AML반영일자	AML_REF_DT
 from "trades" t
-         left join "user" u on t.buyer_id = u.id -- 10: buy crypto
-         left join (select *, row_number() over (partition by unique_key) as r
-                    from "profile") p on t.seller_id = p.user_id and p.r = 1
-         left join "verification" v on v.user_id = u.id
-         left join (SELECT modified,
-                           action,
-                           user_id,
-                           ROW_NUMBER() OVER (PARTITION BY user_id
-                               ORDER BY modified DESC) as rn
-                    FROM logs_aml_user_action
-                    WHERE action = 'validate_idcard') laua on u.id = laua.user_id and rn = 1
-        left join asset on t.base_symbol = asset.symbol
-where t.created > to_timestamp('2022-02-10 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
-  and u.level > 3
-  and t.buyer_id != t.seller_id
-  and laua.modified is not null
-  and t.base_symbol is not null
+    left join "user" u on t.buyer_id = u.id -- 10: buy crypto
+    left join (select *, row_number() over (partition by unique_key) as r from "profile") p on t.seller_id = p.user_id and p.r = 1
+    left join "verification" v on v.user_id = u.id
+    left join asset on t.base_symbol = asset.symbol
+where
+    t.created > to_timestamp('2022-02-10 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
+    and id_photo_verification_status = 'VERIFIED'
+    and u.level > 2
+    and t.buyer_id != t.seller_id
+    and t.base_symbol is not null
 
-  and p.unique_key is not null
-  and length(p.unique_key) > 0
-  and p.unique_key != 'NULL'
+    and p.unique_key is not null
+    and length(p.unique_key) > 0
+    and p.unique_key != 'NULL'
 ;'''
 
     cur = conn.db.cursor()
@@ -403,39 +377,32 @@ select to_char(t.created, 'YYYYMMDD'),                                          
        'oasisexc',                                                                                                             -- 이체금융기관명	CPRTY_TRSNS_FOGN_NM         코인출고 상대편 : 오아시스
        null,                                                                                                                   -- 이체금융기관지점코드	CPRTY_TRSNS_DPRT_CD     코인출고 상대편 : null
        (select waa.address::text
-       from (select address from wallet_address where symbol=t.base_symbol and t.buyer_id=user_id) as waa) as rcvr_addr,                  -- 이체은행금융기관계좌번호	CPRTY_TRSNS_AC_NO
+       from (select address from wallet_address where symbol=t.base_symbol and t.buyer_id=user_id limit 1) as waa) as rcvr_addr,                  -- 이체은행금융기관계좌번호	CPRTY_TRSNS_AC_NO
        p.unique_key,                                                                                                           -- 상대대체계좌명	CPRTY_TRSNS_AC_NM           코인출고 상대편 : 상대방 계정명
        null,                                                                                                                   -- 업체코드	BUSI_CD
        '2',                                                                                                                    -- 거래취소여부	CNCL_F
        null,                                                                                                                   -- 거래취소일시	CNCL_DY_TM
        (select waa.address::text
-       from (select address from wallet_address where symbol=t.base_symbol and t.seller_id=user_id) as waa) as sndr_addr,                  -- 지갑주소	WLT_ADR
+       from (select address from wallet_address where symbol=t.base_symbol and t.seller_id=user_id limit 1) as waa) as sndr_addr,                  -- 지갑주소	WLT_ADR
        null,                                                                                                                   -- 목표꼬리표	DESTINATION_TAG                 목표꼬리표(리플,이오스)
        null,                                                                                                                   -- 체인아널리시스스코어	CHNANL_SOR              FDS
        '2',                                                                                                                    -- 투자유의종목매매여부	INVST_WRN_ITEM_TRD_F    1:여/2:부
        to_char(t.modified, 'YYYYMMDD')                                                                                         -- AML반영일자	AML_REF_DT
 from "trades" t
          left join "user" u on t.seller_id = u.id
-         left join (select *, row_number() over (partition by unique_key) as r
-                    from "profile") p on t.buyer_id = p.user_id and p.r = 1
+         left join (select *, row_number() over (partition by unique_key) as r from "profile") p on t.buyer_id = p.user_id and p.r = 1
          left join "verification" v on v.user_id = u.id
-         left join (SELECT modified,
-                           action,
-                           user_id,
-                           ROW_NUMBER() OVER (PARTITION BY user_id
-                               ORDER BY modified DESC) as rn
-                    FROM logs_aml_user_action
-                    WHERE action = 'validate_idcard') laua on u.id = laua.user_id and rn = 1
         left join asset on t.base_symbol = asset.symbol
-where t.created > to_timestamp('2022-02-10 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
-  and u.level > 3
-  and t.buyer_id != t.seller_id
-  and laua.modified is not null
-  and t.base_symbol is not null
+where
+    t.created > to_timestamp('2022-02-10 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
+    and id_photo_verification_status = 'VERIFIED'
+    and u.level > 2
+    and t.buyer_id != t.seller_id
+    and t.base_symbol is not null
 
-  and p.unique_key is not null
-  and length(p.unique_key) > 0
-  and p.unique_key != 'NULL'
+    and p.unique_key is not null
+    and length(p.unique_key) > 0
+    and p.unique_key != 'NULL'
 ;'''
 
     cur = conn.db.cursor()
@@ -457,8 +424,8 @@ select to_char(t.created, 'YYYYMMDD'),
        '19',
        (case when t.transfer_type = 'DEPOSIT' then '33' else '34' end), -- sell crypto
        '13',                                                            -- 거래수단, 기타
-       '',
        t.symbol,
+       asset.english_name,
        t.volume,
        '5',
        null,
@@ -501,27 +468,21 @@ select to_char(t.created, 'YYYYMMDD'),
        '2',                                                             -- 투자유의종목여부
        '99991231'::varchar
 from "crypto_transfer" t
-         left join "user" u on t.user_id = u.id
-         left join (select *, row_number() over (partition by unique_key) as r
-                    from "profile") p on u.id = p.user_id and p.r = 1
-        left join "verification" v on v.user_id = u.id
-        left join (SELECT modified,
-                           action,
-                           user_id,
-                           ROW_NUMBER() OVER (PARTITION BY user_id
-                               ORDER BY modified DESC) as rn
-                    FROM logs_aml_user_action
-                    WHERE action = 'validate_idcard') laua on u.id = laua.user_id and rn = 1
-where t.crypto_transfer_status in ('CANCELLED', 'COMPLETED', 'INSUFFICIENT', 'FAIL')
-  and t.created > to_timestamp('2022-02-10 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
-  and t.transaction_done_at is not null
-  and u.level > 3
-  and t.sender_address is not null and receiver_address is not null
-  and laua.modified is not null
-  and p.unique_key is not null
-  and length(p.unique_key) > 0
-  and p.unique_key != 'NULL'
-  and amount > 0
+    left join "user" u on t.user_id = u.id
+    left join (select *, row_number() over (partition by unique_key) as r from "profile") p on u.id = p.user_id and p.r = 1
+    left join "verification" v on v.user_id = u.id
+    left join asset on t.symbol = asset.symbol
+where
+    t.crypto_transfer_status in ('COMPLETED')
+    and t.created > to_timestamp('2022-02-10 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
+    and id_photo_verification_status = 'VERIFIED'
+    and t.transaction_done_at is not null
+    and u.level > 2
+    and t.sender_address is not null and receiver_address is not null
+    and p.unique_key is not null
+    and length(p.unique_key) > 0
+    and p.unique_key != 'NULL'
+    and amount > 0
 ;
 '''
 
