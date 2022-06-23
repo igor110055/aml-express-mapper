@@ -297,7 +297,7 @@ where
 
 def aml_t_tms_dl_buy_crypto():
     query_text = '''
-select to_char(t.created, 'YYYYMMDD'),                                                                                        -- 작업일자	JOB_DT              TO_CHAR(SYSDATE,'YYYYMMDD')
+select to_char(now(), 'YYYYMMDD'),                                                                                        -- 작업일자	JOB_DT              TO_CHAR(SYSDATE,'YYYYMMDD')
        u.id,                                                                                                                   -- 계좌번호	GNL_AC_NO
        to_char(t.buy_order_at, 'YYYYMMDD'),                                                                                        -- 거래일자	DL_DT               거래일자(원거래)
        t.uuid,                                                                                                                 -- 거래일련번호	DL_SQ               일련번호(원거래)
@@ -328,7 +328,7 @@ select to_char(t.created, 'YYYYMMDD'),                                          
        null,                                                                                                                   -- 목표꼬리표	DESTINATION_TAG                 목표꼬리표(리플,이오스)
        null,                                                                                                                   -- 체인아널리시스스코어	CHNANL_SOR              FDS
        '2',                                                                                                                    -- 투자유의종목매매여부	INVST_WRN_ITEM_TRD_F    1:여/2:부
-       to_char(t.modified, 'YYYYMMDD')                                                                                         -- AML반영일자	AML_REF_DT
+       '99991231'::varchar                                                                                         -- AML반영일자	AML_REF_DT
 from "trades" t
     left join "user" u on t.buyer_id = u.id -- 10: buy crypto
     left join (select *, row_number() over (partition by unique_key) as r from "profile") p on t.seller_id = p.user_id and p.r = 1
@@ -358,15 +358,15 @@ where
 
 def aml_t_tms_dl_sell_crypto():
     query_text = '''
-select to_char(t.created, 'YYYYMMDD'),                                                                                        -- 작업일자	JOB_DT              TO_CHAR(SYSDATE,'YYYYMMDD')
+select to_char(now(), 'YYYYMMDD'),                                                                                        -- 작업일자	JOB_DT              TO_CHAR(SYSDATE,'YYYYMMDD')
        u.id,                                                                                                                   -- 계좌번호	GNL_AC_NO
        to_char(t.sell_order_at, 'YYYYMMDD'),                                                                                        -- 거래일자	DL_DT               거래일자(원거래)
        t.uuid,                                                                                                                 -- 거래일련번호	DL_SQ               일련번호(원거래)
        '19',                                                                                                                   -- 거래채널코드	DL_CHNNL_CD
        '32',                                                                                                                   -- 거래종류코드	DL_TYP_CD
        '13',                                                                                                                   -- 거래수단코드	DL_WY_CD
-       t.base_symbol,                                                                                                         -- 매매종목코드	STBD_CODE           코인 마켓심볼
-       asset.english_name,                                                                                                          -- 매매종목명	STBD_NM             코인명
+       t.base_symbol,                                                                                                          -- 매매종목코드	STBD_CODE           코인 마켓심볼
+       asset.english_name,                                                                                                     -- 매매종목명	STBD_NM             코인명
        t.volume,                                                                                                               -- 매매수량	DEAL_FLUC_QTY
        '5',                                                                                                                    -- 거래매체구분코드	DL_MD_CCD
        null,                                                                                                                   -- 국제수지코드	FXCH_DL_OBJ_CD
@@ -389,7 +389,7 @@ select to_char(t.created, 'YYYYMMDD'),                                          
        null,                                                                                                                   -- 목표꼬리표	DESTINATION_TAG                 목표꼬리표(리플,이오스)
        null,                                                                                                                   -- 체인아널리시스스코어	CHNANL_SOR              FDS
        '2',                                                                                                                    -- 투자유의종목매매여부	INVST_WRN_ITEM_TRD_F    1:여/2:부
-       to_char(t.modified, 'YYYYMMDD')                                                                                         -- AML반영일자	AML_REF_DT
+       '99991231'::varchar                                                                                         -- AML반영일자	AML_REF_DT
 from "trades" t
          left join "user" u on t.seller_id = u.id
          left join (select *, row_number() over (partition by unique_key) as r from "profile") p on t.buyer_id = p.user_id and p.r = 1
@@ -419,7 +419,7 @@ where
 
 def aml_t_tms_dl_transfercrypto():
     query_text = '''
-select to_char(t.created, 'YYYYMMDD'),
+select to_char(now(), 'YYYYMMDD'),
        u.id,
        to_char(t.transaction_done_at, 'YYYYMMDD'),
        t.uuid,
