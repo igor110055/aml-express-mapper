@@ -46,7 +46,7 @@ where
     cur = conn.db.cursor()
     result = cur.execute(query_text)
 
-    conn.commit()
+    # conn.commit()
 
     print(result)
 
