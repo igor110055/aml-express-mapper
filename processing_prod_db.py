@@ -52,7 +52,7 @@ where
 
 def aml_t_kyc_base():
     query_text = '''
-select coalesce(to_char(id_photo_kyc_last_censored_at, 'YYYYMMDD'), '20220210'),
+select to_char(now(), 'YYYYMMDD'),
        p.unique_key,
        (case when u.user_type like '%INDIVIDUAL' then '1' else '2' end)::varchar,
        '01'::varchar,
@@ -218,7 +218,7 @@ def aml_t_kyc_base_update_exit():
 
 def aml_t_ac_prod():
     query_text = '''
-select coalesce(to_char(id_photo_kyc_last_censored_at, 'YYYYMMDD'), '20220210'),
+select to_char(now(), 'YYYYMMDD'),
        u.id,
        '99',                               -- 상품번호 기타
        '1',                                -- 계좌상태 정상 2: 비정상
@@ -262,7 +262,7 @@ where
 
 def aml_t_kyc_token_address():
     query_text = '''
-select coalesce(to_char(id_photo_kyc_last_censored_at, 'YYYYMMDD'), '20220210'),
+select to_char(now(), 'YYYYMMDD'),
        u.id,
        w.network_name,
        w.symbol,
@@ -297,10 +297,10 @@ where
 
 def aml_t_tms_dl_buy_crypto():
     query_text = '''
-select to_char(now(), 'YYYYMMDD'),                                                                                        -- 작업일자	JOB_DT              TO_CHAR(SYSDATE,'YYYYMMDD')
-       u.id,                                                                                                                   -- 계좌번호	GNL_AC_NO
-       to_char(t.buy_order_at, 'YYYYMMDD'),                                                                                        -- 거래일자	DL_DT               거래일자(원거래)
-       t.uuid,                                                                                                                 -- 거래일련번호	DL_SQ               일련번호(원거래)
+select to_char(t.buy_order_at + interval '1 day', 'YYYYMMDD'),                                                                                      -- 작업일자	JOB_DT              TO_CHAR(SYSDATE,'YYYYMMDD')
+       u.id,                                                                                                            -- 계좌번호	GNL_AC_NO
+       to_char(t.buy_order_at, 'YYYYMMDD'),                                                                             -- 거래일자	DL_DT               거래일자(원거래)
+       t.uuid,                                                                                                          -- 거래일련번호	DL_SQ               일련번호(원거래)
        '19',                                                                                                                   -- 거래채널코드	DL_CHNNL_CD
        '31',                                                                                                                   -- 거래종류코드	DL_TYP_CD
        '13',                                                                                                                   -- 거래수단코드	DL_WY_CD
@@ -328,7 +328,7 @@ select to_char(now(), 'YYYYMMDD'),                                              
        null,                                                                                                                   -- 목표꼬리표	DESTINATION_TAG                 목표꼬리표(리플,이오스)
        null,                                                                                                                   -- 체인아널리시스스코어	CHNANL_SOR              FDS
        '2',                                                                                                                    -- 투자유의종목매매여부	INVST_WRN_ITEM_TRD_F    1:여/2:부
-       '99991231'::varchar                                                                                         -- AML반영일자	AML_REF_DT
+       '99991231'::varchar                                                                                                     -- AML반영일자	AML_REF_DT
 from "trades" t
     left join "user" u on t.buyer_id = u.id -- 10: buy crypto
     left join (select *, row_number() over (partition by unique_key) as r from "profile") p on t.seller_id = p.user_id and p.r = 1
@@ -344,6 +344,7 @@ where
     and p.unique_key is not null
     and length(p.unique_key) > 0
     and p.unique_key != 'NULL'
+    and t.buy_order_at between to_timestamp('2022-06-23 00:00:00', 'YYYY-MM-DD HH24:MI:SS') and to_timestamp('2022-06-28 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
 ;'''
 
     cur = conn.db.cursor()
@@ -358,7 +359,7 @@ where
 
 def aml_t_tms_dl_sell_crypto():
     query_text = '''
-select to_char(now(), 'YYYYMMDD'),                                                                                        -- 작업일자	JOB_DT              TO_CHAR(SYSDATE,'YYYYMMDD')
+select to_char(t.sell_order_at + interval '1 day', 'YYYYMMDD'),                                                                                        -- 작업일자	JOB_DT              TO_CHAR(SYSDATE,'YYYYMMDD')
        u.id,                                                                                                                   -- 계좌번호	GNL_AC_NO
        to_char(t.sell_order_at, 'YYYYMMDD'),                                                                                        -- 거래일자	DL_DT               거래일자(원거래)
        t.uuid,                                                                                                                 -- 거래일련번호	DL_SQ               일련번호(원거래)
@@ -389,7 +390,7 @@ select to_char(now(), 'YYYYMMDD'),                                              
        null,                                                                                                                   -- 목표꼬리표	DESTINATION_TAG                 목표꼬리표(리플,이오스)
        null,                                                                                                                   -- 체인아널리시스스코어	CHNANL_SOR              FDS
        '2',                                                                                                                    -- 투자유의종목매매여부	INVST_WRN_ITEM_TRD_F    1:여/2:부
-       '99991231'::varchar                                                                                         -- AML반영일자	AML_REF_DT
+       '99991231'::varchar                                                                                                     -- AML반영일자	AML_REF_DT
 from "trades" t
          left join "user" u on t.seller_id = u.id
          left join (select *, row_number() over (partition by unique_key) as r from "profile") p on t.buyer_id = p.user_id and p.r = 1
@@ -405,6 +406,7 @@ where
     and p.unique_key is not null
     and length(p.unique_key) > 0
     and p.unique_key != 'NULL'
+    and t.sell_order_at between to_timestamp('2022-06-23 00:00:00', 'YYYY-MM-DD HH24:MI:SS') and to_timestamp('2022-06-28 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
 ;'''
 
     cur = conn.db.cursor()
@@ -419,7 +421,7 @@ where
 
 def aml_t_tms_dl_transfercrypto():
     query_text = '''
-select to_char(now(), 'YYYYMMDD'),
+select to_char(t.transaction_done_at + interval '1 day', 'YYYYMMDD'),
        u.id,
        to_char(t.transaction_done_at, 'YYYYMMDD'),
        t.uuid,
@@ -485,6 +487,7 @@ where
     and length(p.unique_key) > 0
     and p.unique_key != 'NULL'
     and amount > 0
+    and t.transaction_done_at between to_timestamp('2022-06-23 00:00:00', 'YYYY-MM-DD HH24:MI:SS') and to_timestamp('2022-06-28 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
 ;
 '''
 
