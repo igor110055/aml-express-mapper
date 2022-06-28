@@ -8,7 +8,7 @@ def run_cmd(cmd):
     # print(cmd)
 
 if __name__ == '__main__':
-    begin_date = '202203010'
+    begin_date = '20220310'
     date_format = '%Y%m%d'
 
     end_date_str = sys.argv[1]
