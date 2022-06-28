@@ -344,7 +344,9 @@ where
     and p.unique_key is not null
     and length(p.unique_key) > 0
     and p.unique_key != 'NULL'
-    and t.buy_order_at between to_timestamp('2022-06-23 00:00:00', 'YYYY-MM-DD HH24:MI:SS') and to_timestamp('2022-06-28 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
+    and t.buy_order_at between
+            to_timestamp(to_char(now() - interval '1 day', 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
+        and to_timestamp(to_char(now(), 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
 ;'''
 
     cur = conn.db.cursor()
@@ -406,7 +408,9 @@ where
     and p.unique_key is not null
     and length(p.unique_key) > 0
     and p.unique_key != 'NULL'
-    and t.sell_order_at between to_timestamp('2022-06-23 00:00:00', 'YYYY-MM-DD HH24:MI:SS') and to_timestamp('2022-06-28 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
+    and t.sell_order_at between
+            to_timestamp(to_char(now() - interval '1 day', 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
+        and to_timestamp(to_char(now(), 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
 ;'''
 
     cur = conn.db.cursor()
@@ -487,7 +491,9 @@ where
     and length(p.unique_key) > 0
     and p.unique_key != 'NULL'
     and amount > 0
-    and t.transaction_done_at between to_timestamp('2022-06-23 00:00:00', 'YYYY-MM-DD HH24:MI:SS') and to_timestamp('2022-06-28 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
+    and t.transaction_done_at between
+            to_timestamp(to_char(now() - interval '1 day', 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
+        and to_timestamp(to_char(now(), 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
 ;
 '''
 
