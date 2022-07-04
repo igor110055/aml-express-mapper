@@ -26,7 +26,7 @@ from (
                                           from candles
                                           where
                                                   split_part(trading_pair_name, '-', 1) = a.symbol
-                                            and created between a.created - (interval '365 day') and a.created + (interval '365 day')
+                                            and created between a.created - (interval '712 day') and a.created + (interval '365 day')
                                       ) as b
                                  order by diff
                                  limit 1)
@@ -35,7 +35,7 @@ from (
          from crypto_transfer a
          where
              crypto_transfer_status in ('COMPLETED')
-           and created > to_timestamp('2022-02-10 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
+           and created > (now() - interval '1 day')
            and symbol <> 'KOC'
            and amount = 0
      ) as bb
@@ -76,7 +76,7 @@ select to_char(now(), 'YYYYMMDD'),
        p.work_post_number::varchar,
        p.work_address::varchar,
        p.work_tel_number::varchar,
-       '복호화 후 따로추가'::varchar,
+       p.phone_number::varchar,
        p.job_code::varchar,
        null,
        null,
@@ -110,7 +110,7 @@ select to_char(now(), 'YYYYMMDD'),
        coalesce(to_char(id_photo_kyc_last_censored_at, 'YYYYMMDD'), '20220210'),
        to_char(u.modified, 'YYYYMMDD'),
        '99991231'::varchar,
-       '이메일복호화'::varchar,
+       u.email::varchar,
        null,
        null,
        null,
@@ -172,6 +172,7 @@ where p.unique_key is not null
   and length(p.unique_key) > 0
   and p.unique_key != 'NULL'
   and u.level > 3;"""
+
     cur = conn.db.cursor()
     cur.execute(query_text)
     rows = cur.fetchall()
@@ -200,11 +201,15 @@ where p.unique_key is not null
             except:
                 print(f'email decryption failed, {row}')
                 email = DECRYPTION_ERR_STR
-        re_encrypted_phone = DECRYPTION_ERR_STR if phone_number == DECRYPTION_ERR_STR \
-            else cipher_suite.encrypt(phone_number.encode('utf-8')).decode('utf-8')
-        re_encrypted_email = DECRYPTION_ERR_STR if email == DECRYPTION_ERR_STR \
-            else cipher_suite.encrypt(email.encode('utf-8')).decode('utf-8')
-        output.writerow([unique_key, re_encrypted_phone, re_encrypted_email])  # len 100 len 120
+
+        # re_encrypted_phone = DECRYPTION_ERR_STR if phone_number == DECRYPTION_ERR_STR \
+        #     else cipher_suite.encrypt(phone_number.encode('utf-8')).decode('utf-8')
+        # re_encrypted_email = DECRYPTION_ERR_STR if email == DECRYPTION_ERR_STR \
+        #     else cipher_suite.encrypt(email.encode('utf-8')).decode('utf-8')
+        # output.writerow([unique_key, re_encrypted_phone, re_encrypted_email])  # len 100 len 120
+
+        output.writerow([unique_key, phone_number, email])  # len 100 len 120
+
     f.close()
 
 
