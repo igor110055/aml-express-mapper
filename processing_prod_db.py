@@ -41,6 +41,7 @@ from (
             )
            and created > (now() - interval '1 day')
            and symbol <> 'KOC'
+           and transaction_done_at is not null
      ) as bb
 where
         aa.id = bb.id
@@ -556,7 +557,7 @@ def manual_decrypt_phonenumber(target_list):
 
 
 if __name__ == '__main__':
-    aml_update_krw_value()
+    # aml_update_krw_value()
     aml_t_kyc_base()
     aml_t_kyc_base_decrypted_data()
     aml_t_tms_dl_buy_crypto()
