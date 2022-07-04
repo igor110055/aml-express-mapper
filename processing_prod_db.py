@@ -34,10 +34,13 @@ from (
                     end amount
          from crypto_transfer a
          where
-             crypto_transfer_status in ('COMPLETED')
+             crypto_transfer_status not in (
+                'CANCELLED',
+                'FAIL',
+                'INSUFFICIENT'
+            )
            and created > (now() - interval '1 day')
            and symbol <> 'KOC'
-           and amount = 0
      ) as bb
 where
         aa.id = bb.id
