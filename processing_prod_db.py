@@ -151,6 +151,11 @@ where
     cur.execute(query_text)
     data = cur.fetchall()
 
+    with open('./processed/kyc_base_uncompleted.csv', 'r+', newline='') as f:
+        data = f.read()
+        f.seek(0)
+        f.truncate()
+
     with open('./processed/kyc_base_uncompleted.csv', 'w', newline='') as f:
         output = csv.writer(f)
         for row in data:
