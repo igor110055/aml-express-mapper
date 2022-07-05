@@ -35,7 +35,7 @@ from (
          from crypto_transfer a
          where
             crypto_transfer_status in ('COMPLETED')
-            and created > to_timestamp(to_char(now() - interval '1 day', 'YYYY-MM-DD'), 'YYYY-MM-DD')
+            and created > to_timestamp(to_char(now() - interval '30 day', 'YYYY-MM-DD'), 'YYYY-MM-DD')
             and symbol <> 'KOC'
             and transaction_done_at is not null
             and amount = 0
