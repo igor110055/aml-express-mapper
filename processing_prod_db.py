@@ -6,7 +6,7 @@ from cryptography.fernet import Fernet
 
 conn = Connection()
 
-def aml_update_krw_value():
+def aml_update_usd_value():
     query_text = '''
 update crypto_transfer as aa
 set
@@ -34,14 +34,12 @@ from (
                     end amount
          from crypto_transfer a
          where
-             crypto_transfer_status not in (
-                'CANCELLED',
-                'FAIL',
-                'INSUFFICIENT'
-            )
-           and created > (now() - interval '1 day')
-           and symbol <> 'KOC'
-           and transaction_done_at is not null
+            crypto_transfer_status in ('COMPLETED')
+            and created > to_timestamp(to_char(now() - interval '1 day', 'YYYY-MM-DD'), 'YYYY-MM-DD')
+            and symbol <> 'KOC'
+            and transaction_done_at is not null
+            and amount = 0
+            and id = 10020
      ) as bb
 where
         aa.id = bb.id
@@ -353,9 +351,9 @@ where
     and p.unique_key is not null
     and length(p.unique_key) > 0
     and p.unique_key != 'NULL'
---    and t.buy_order_at between
---            to_timestamp(to_char(now() - interval '1 day', 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
---        and to_timestamp(to_char(now(), 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
+    and t.buy_order_at between
+            to_timestamp(to_char(now() - interval '1 day', 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
+        and to_timestamp(to_char(now(), 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
 ;'''
 
     cur = conn.db.cursor()
@@ -417,9 +415,9 @@ where
     and p.unique_key is not null
     and length(p.unique_key) > 0
     and p.unique_key != 'NULL'
---    and t.sell_order_at between
---            to_timestamp(to_char(now() - interval '1 day', 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
---        and to_timestamp(to_char(now(), 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
+    and t.sell_order_at between
+            to_timestamp(to_char(now() - interval '1 day', 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
+        and to_timestamp(to_char(now(), 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
 ;'''
 
     cur = conn.db.cursor()
@@ -500,9 +498,9 @@ where
     and length(p.unique_key) > 0
     and p.unique_key != 'NULL'
     and amount > 0
---    and t.transaction_done_at between
---            to_timestamp(to_char(now() - interval '1 day', 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
---        and to_timestamp(to_char(now(), 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
+    and t.transaction_done_at between
+            to_timestamp(to_char(now() - interval '1 day', 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
+        and to_timestamp(to_char(now(), 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
 ;
 '''
 
@@ -557,12 +555,12 @@ def manual_decrypt_phonenumber(target_list):
 
 
 if __name__ == '__main__':
-    # aml_update_krw_value()
-    aml_t_kyc_base()
-    aml_t_kyc_base_decrypted_data()
-    aml_t_tms_dl_buy_crypto()
-    aml_t_tms_dl_sell_crypto()
-    aml_t_tms_dl_transfercrypto()
-    aml_t_ac_prod()
-    aml_t_kyc_token_address()
+    aml_update_usd_value()
+    # aml_t_kyc_base()
+    # aml_t_kyc_base_decrypted_data()
+    # aml_t_tms_dl_buy_crypto()
+    # aml_t_tms_dl_sell_crypto()
+    # aml_t_tms_dl_transfercrypto()
+    # aml_t_ac_prod()
+    # aml_t_kyc_token_address()
 
