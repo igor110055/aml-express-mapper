@@ -556,11 +556,11 @@ def manual_decrypt_phonenumber(target_list):
 
 if __name__ == '__main__':
     aml_update_usd_value()
-    # aml_t_kyc_base()
-    # aml_t_kyc_base_decrypted_data()
-    # aml_t_tms_dl_buy_crypto()
-    # aml_t_tms_dl_sell_crypto()
-    # aml_t_tms_dl_transfercrypto()
-    # aml_t_ac_prod()
-    # aml_t_kyc_token_address()
+    aml_t_kyc_base()
+    aml_t_kyc_base_decrypted_data()
+    aml_t_tms_dl_buy_crypto()
+    aml_t_tms_dl_sell_crypto()
+    aml_t_tms_dl_transfercrypto()
+    aml_t_ac_prod()
+    aml_t_kyc_token_address()
 
