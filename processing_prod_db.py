@@ -152,7 +152,7 @@ where
     data = cur.fetchall()
 
     with open('./processed/kyc_base_uncompleted.csv', 'r+', newline='') as f:
-        data = f.read()
+        f.read()
         f.seek(0)
         f.truncate()
 
@@ -185,6 +185,11 @@ where p.unique_key is not null
     rows = cur.fetchall()
     cipher_suite = Fernet('IAZ488hye4PRwe72IvOYHq6FOQwlwuK02998rtpJ2co='.encode('utf-8'))
     DECRYPTION_ERR_STR = 'DECRYPT_ERR'
+
+    with open('./processed/kyc_decrypted_data.csv', 'r+', newline='') as f:
+        f.read()
+        f.seek(0)
+        f.truncate()
 
     f = open('./processed/kyc_decrypted_data.csv', 'w', newline='')
     output = csv.writer(f)
@@ -266,6 +271,11 @@ where
     cur.execute(query_text)
     data = cur.fetchall()
 
+    with open('./processed/t_ac_prod.csv', 'r+', newline='') as f:
+        f.read()
+        f.seek(0)
+        f.truncate()
+
     with open('./processed/t_ac_prod.csv', 'w', newline='') as f:
         output = csv.writer(f)
         for row in data:
@@ -300,6 +310,11 @@ where
     cur = conn.db.cursor()
     cur.execute(query_text)
     data = cur.fetchall()
+
+    with open('./processed/t_kyc_token_address.csv', 'r+', newline='') as f:
+        f.read()
+        f.seek(0)
+        f.truncate()
 
     with open('./processed/t_kyc_token_address.csv', 'w', newline='') as f:
         output = csv.writer(f)
@@ -365,6 +380,11 @@ where
     cur.execute(query_text)
     data = cur.fetchall()
 
+    with open('./processed/t_tms_dl_buycrypto.csv', 'r+', newline='') as f:
+        f.read()
+        f.seek(0)
+        f.truncate()
+
     with open('./processed/t_tms_dl_buycrypto.csv', 'w', newline='') as f:
         output = csv.writer(f)
         for row in data:
@@ -428,6 +448,11 @@ where
     cur = conn.db.cursor()
     cur.execute(query_text)
     data = cur.fetchall()
+
+    with open('./processed/t_tms_dl_sellcrypto.csv', 'r+', newline='') as f:
+        f.read()
+        f.seek(0)
+        f.truncate()
 
     with open('./processed/t_tms_dl_sellcrypto.csv', 'w', newline='') as f:
         output = csv.writer(f)
@@ -512,6 +537,11 @@ where
     cur = conn.db.cursor()
     cur.execute(query_text)
     data = cur.fetchall()
+
+    with open('./processed/t_tms_dl_transfercrypto.csv', 'r+', newline='') as f:
+        f.read()
+        f.seek(0)
+        f.truncate()
 
     with open('./processed/t_tms_dl_transfercrypto.csv', 'w', newline='') as f:
         output = csv.writer(f)
