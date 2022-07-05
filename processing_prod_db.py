@@ -39,7 +39,6 @@ from (
             and symbol <> 'KOC'
             and transaction_done_at is not null
             and amount = 0
-            and id = 10020
      ) as bb
 where
         aa.id = bb.id
