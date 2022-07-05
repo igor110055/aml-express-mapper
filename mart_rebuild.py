@@ -25,10 +25,10 @@ if __name__ == '__main__':
         current_date_eve = current_date - timedelta(days=1)
         current_date_eve_fmt = current_date_eve.strftime(date_format)
 
-        # if index == 0:
-        #     cmd = ['. ~/.profile; /home/ubuntu/AMLExpress_6_0_Batch/dist/ETL_REV.sh', end_date_str, end_date_str]
-        #     print('==============ETL_REV==============')
-        #     run_cmd(' '.join(cmd))
+        if index == 0:
+            cmd = ['. ~/.profile; /home/ubuntu/AMLExpress_6_0_Batch/dist/ETL_REV.sh', end_date_str, end_date_str]
+            print('==============ETL_REV==============')
+            run_cmd(' '.join(cmd))
 
         cmd = ['. ~/.profile; /home/ubuntu/AMLExpress_6_0_Batch/dist/KYC_WLF.sh', 'DAY', current_date_fmt, current_date_fmt, '0']
         print('==============KYC_WLF DAY==============')
