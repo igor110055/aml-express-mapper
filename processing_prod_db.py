@@ -35,9 +35,8 @@ from (
          from crypto_transfer a
          where
             crypto_transfer_status in ('COMPLETED')
-            and created > to_timestamp(to_char(now() - interval '30 day', 'YYYY-MM-DD'), 'YYYY-MM-DD')
+            and transaction_done_at > to_timestamp(to_char(now() - interval '30 day', 'YYYY-MM-DD'), 'YYYY-MM-DD')
             and symbol <> 'KOC'
-            and transaction_done_at is not null
             and amount = 0
      ) as bb
 where
@@ -46,10 +45,46 @@ where
 
     cur = conn.db.cursor()
     result = cur.execute(query_text)
-
     conn.db.commit()
 
-    print(result)
+    query_text = '''
+update crypto_transfer as aa
+set
+    amount = "volume" * bb.amount
+from (
+         select id,
+                case a.symbol
+                    when 'USDT' then 1
+                    else
+                        coalesce(
+                                (select
+                                     close_price
+                                 from (
+                                          select
+                                              abs(EXTRACT(EPOCH FROM (a.created - created))) as diff,
+                                              close_price
+                                          from candles
+                                          where
+                                                  split_part(trading_pair_name, '-', 1) = a.symbol
+                                            and created between a.created - (interval '712 day') and a.created + (interval '365 day')
+                                      ) as b
+                                 order by diff
+                                 limit 1)
+                            , 0)
+                    end amount
+         from crypto_transfer a
+         where
+            crypto_transfer_status in ('COMPLETED')
+            and transaction_done_at > to_timestamp(to_char(now() - interval '1 day', 'YYYY-MM-DD'), 'YYYY-MM-DD')
+            and symbol = 'KLAY'
+     ) as bb
+where
+        aa.id = bb.id
+;'''
+
+    cur = conn.db.cursor()
+    result = cur.execute(query_text)
+    conn.db.commit()
 
 def aml_t_kyc_base():
     query_text = '''
