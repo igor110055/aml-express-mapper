@@ -11,7 +11,7 @@ aml_tunnel = SSHTunnelForwarder(('3.37.44.106', 22),
                             ssh_password='',
                             remote_bind_address=('aml-database.cyojdge9rvsp.ap-northeast-2.rds.amazonaws.com', MYSQL_PORT),
                             local_bind_address=('localhost', 1234),
-                            ssh_pkey='AML.pem',
+                            ssh_pkey='/home/ubuntu/aml-express-mapper/AML.pem',
                             ssh_private_key_password='')
 aml_tunnel.start()
 

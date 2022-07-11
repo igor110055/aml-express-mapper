@@ -13,7 +13,7 @@ class Connection:
                                     'oasis-production-database-main.cyojdge9rvsp.ap-northeast-2.rds.amazonaws.com',
                                     POSTGRESQL_PORT),
                                 local_bind_address=('localhost', 1234),
-                                ssh_pkey='oasis-production-bastion.pem',
+                                ssh_pkey='/home/ubuntu/aml-express-mapper/oasis-production-bastion.pem',
                                 ssh_private_key_password='')
     tunnel.start()
     db = psycopg2.connect(host=tunnel.local_bind_host,
