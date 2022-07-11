@@ -405,10 +405,10 @@ where
     and p.unique_key is not null
     and length(p.unique_key) > 0
     and p.unique_key != 'NULL'
-    and t.buy_order_at > to_timestamp('2022-07-05 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
-    -- and t.buy_order_at between
-    --         to_timestamp(to_char(now() - interval '1 day', 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
-    --    and to_timestamp(to_char(now(), 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
+    -- and t.buy_order_at > to_timestamp('2022-07-05 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
+    and t.buy_order_at between
+            to_timestamp(to_char(now() - interval '1 day', 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
+       and to_timestamp(to_char(now(), 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
 ;'''
 
     cur = conn.db.cursor()
@@ -475,10 +475,10 @@ where
     and p.unique_key is not null
     and length(p.unique_key) > 0
     and p.unique_key != 'NULL'
-    and t.sell_order_at > to_timestamp('2022-07-05 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
-    -- and t.sell_order_at between
-    --         to_timestamp(to_char(now() - interval '1 day', 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
-    --    and to_timestamp(to_char(now(), 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
+    -- and t.sell_order_at > to_timestamp('2022-07-05 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
+    and t.sell_order_at between
+            to_timestamp(to_char(now() - interval '1 day', 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
+       and to_timestamp(to_char(now(), 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
 ;'''
 
     cur = conn.db.cursor()
@@ -564,10 +564,10 @@ where
     and length(p.unique_key) > 0
     and p.unique_key != 'NULL'
     and amount > 0
-    and t.transaction_done_at > to_timestamp('2022-07-05 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
-    -- and t.transaction_done_at between
-    --        to_timestamp(to_char(now() - interval '1 day', 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
-    --    and to_timestamp(to_char(now(), 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
+    -- and t.transaction_done_at > to_timestamp('2022-07-05 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
+    and t.transaction_done_at between
+           to_timestamp(to_char(now() - interval '1 day', 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
+       and to_timestamp(to_char(now(), 'YYYYMMDD'), 'YYYYMMDD HH24:MI:SS')
 ;
 '''
 
@@ -627,7 +627,7 @@ def manual_decrypt_phonenumber(target_list):
 
 
 if __name__ == '__main__':
-    # aml_update_usd_value()
+    aml_update_usd_value()
     aml_t_kyc_base()
     aml_t_kyc_base_decrypted_data()
     aml_t_tms_dl_buy_crypto()
