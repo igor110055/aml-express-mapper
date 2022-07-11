@@ -1,4 +1,4 @@
-cd ~/.profile; /home/ubuntu/aml-express-mapper
+cd /home/ubuntu/aml-express-mapper
 
 python3 processing_prod_db.py
 python3 processing_uncompleted_userdata.py
