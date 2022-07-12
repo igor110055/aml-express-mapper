@@ -30,9 +30,9 @@ if __name__ == '__main__':
         #     print('==============ETL_REV==============')
         #     run_cmd(' '.join(cmd))
 
-        cmd = ['. ~/.profile; /home/ubuntu/AMLExpress_6_0_Batch/dist/ETL_REV.sh', current_date_fmt, current_date_fmt]
-        print('==============ETL_REV==============')
-        run_cmd(' '.join(cmd))
+        # cmd = ['. ~/.profile; /home/ubuntu/AMLExpress_6_0_Batch/dist/ETL_REV.sh', current_date_fmt, current_date_fmt]
+        # print('==============ETL_REV==============')
+        # run_cmd(' '.join(cmd))
 
         cmd = ['. ~/.profile; /home/ubuntu/AMLExpress_6_0_Batch/dist/KYC_WLF.sh', 'DAY', current_date_fmt, current_date_fmt, '0']
         print('==============KYC_WLF DAY==============')
